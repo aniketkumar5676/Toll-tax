@@ -1,0 +1,127 @@
+<app-navbar></app-navbar>
+<main class="min-h-screen pt-16 font-sans text-gray-800 dark:text-gray-200">
+  <div class="flex items-center justify-center p-4" style="min-height: calc(100vh - 4rem);">
+    <div class="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 transition-all duration-500 ease-in-out">
+      
+      @switch (step()) {
+        @case ('entry') {
+          <div class="space-y-6 text-center">
+            <div class="flex justify-center text-blue-600 dark:text-blue-400">
+              <svg class="w-16 h-16" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.125-.504 1.125-1.125V14.25m-17.25 4.5v-1.875a3.375 3.375 0 0 0 .094-1.583l.001-.002c.07-.403.188-.79.324-1.172.135-.382.296-.75.486-1.112v-2.251c0-.621.504-1.125 1.125-1.125H18c.621 0 1.125.504 1.125 1.125v2.251c.19.362.351.73.486 1.112.136.382.254.77.324 1.172.001.002.094.18.094 1.583v1.875m-17.25 4.5h15M6.625 10.875h10.75" />
+              </svg>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">E-Toll Payment</h1>
+            <p class="text-gray-600 dark:text-gray-400">Enter your vehicle's registration number to proceed.</p>
+            
+            <form (submit)="submitVehicleNumber()" class="space-y-4">
+              <div>
+                <label for="vehicleNumber" class="sr-only">Vehicle Number</label>
+                <input 
+                  id="vehicleNumber" 
+                  name="vehicleNumber" 
+                  type="text" 
+                  [(ngModel)]="vehicleNumber"
+                  (input)="vehicleNumber.set($any($event.target).value)"
+                  placeholder="e.g., MH 12 AB 3456" 
+                  required 
+                  class="block w-full px-4 py-3 text-lg text-center font-mono tracking-widest bg-gray-100 dark:bg-gray-700 border-2 rounded-lg transition focus:ring-2 focus:outline-none"
+                  [class.border-gray-200]="!vehicleNumber() || isVehicleNumberValid()"
+                  [class.dark:border-gray-600]="!vehicleNumber() || isVehicleNumberValid()"
+                  [class.focus:ring-blue-500]="isVehicleNumberValid()"
+                  [class.focus:border-blue-500]="isVehicleNumberValid()"
+                  [class.border-red-500]="vehicleNumber() && !isVehicleNumberValid()"
+                  [class.dark:border-red-500]="vehicleNumber() && !isVehicleNumberValid()"
+                  [class.focus:ring-red-500]="vehicleNumber() && !isVehicleNumberValid()"
+                  [class.focus:border-red-500]="vehicleNumber() && !isVehicleNumberValid()"
+                >
+              </div>
+              <button 
+                type="submit" 
+                [disabled]="!isVehicleNumberValid()" 
+                class="w-full py-3 px-4 text-lg font-semibold text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 disabled:bg-gray-400 disabled:dark:bg-gray-600 disabled:cursor-not-allowed transition-colors duration-300">
+                Proceed to Pay
+              </button>
+            </form>
+          </div>
+        }
+        @case ('payment') {
+          <div class="space-y-6">
+            <div class="text-center">
+              <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Payment Details</h2>
+              <p class="text-gray-500 dark:text-gray-400 font-mono tracking-wider">{{ vehicleNumber() }}</p>
+            </div>
+            <div class="bg-blue-50 dark:bg-blue-900/50 text-center p-6 rounded-xl border border-blue-200 dark:border-blue-800">
+              <p class="text-sm font-medium text-blue-600 dark:text-blue-300">TOLL AMOUNT</p>
+              <p class="text-5xl font-bold text-blue-800 dark:text-blue-200">{{ tollAmount() | currency:'INR':'symbol':'1.2-2' }}</p>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">Choose Payment Method</h3>
+              <div class="grid grid-cols-3 gap-3">
+                @for (method of paymentMethods; track method.name) {
+                  <button (click)="selectPaymentMethod(method.name)" class="flex flex-col items-center justify-center p-3 space-y-2 border-2 rounded-lg transition-all duration-200" [class.bg-blue-100]="selectedPaymentMethod() === method.name" [class.dark:bg-blue-900/70]="selectedPaymentMethod() === method.name" [class.border-blue-500]="selectedPaymentMethod() === method.name" [class.dark:border-blue-500]="selectedPaymentMethod() === method.name" [class.border-gray-200]="selectedPaymentMethod() !== method.name" [class.dark:border-gray-600]="selectedPaymentMethod() !== method.name">
+                    @switch(method.icon) {
+                      @case('credit-card') {
+                        <svg class="w-8 h-8 text-gray-600 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15A2.25 2.25 0 0 0 2.25 6.75v10.5A2.25 2.25 0 0 0 4.5 19.5Z" /></svg>
+                      }
+                      @case('upi') {
+                        <svg class="w-8 h-8 text-gray-600 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+                      }
+                      @case('net-banking') {
+                        <svg class="w-8 h-8 text-gray-600 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75Z" /></svg>
+                      }
+                    }
+                    <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">{{ method.name }}</span>
+                  </button>
+                }
+              </div>
+            </div>
+            <button (click)="processPayment()" [disabled]="!selectedPaymentMethod() || isProcessing()" class="w-full flex items-center justify-center py-3 px-4 text-lg font-semibold text-white bg-green-600 rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:focus:ring-offset-gray-800 disabled:bg-gray-400 disabled:dark:bg-gray-600 disabled:cursor-not-allowed transition-colors duration-300">
+              @if (isProcessing()) {
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Processing...</span>
+              } @else {
+                <span>Pay Now</span>
+              }
+            </button>
+          </div>
+        }
+        @case ('receipt') {
+          <div class="text-center space-y-6">
+            <div class="flex justify-center text-green-500">
+              <svg class="w-20 h-20" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+              </svg>
+            </div>
+            <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Payment Successful!</h2>
+            <p class="text-gray-600 dark:text-gray-400">Your toll tax has been paid successfully.</p>
+            <div class="text-left bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg border dark:border-gray-700 divide-y divide-gray-200 dark:divide-gray-600">
+              <div class="py-3 flex justify-between items-center">
+                <span class="font-medium text-gray-500 dark:text-gray-400">Transaction ID</span>
+                <span class="font-mono text-sm text-gray-800 dark:text-gray-200">{{ transactionId() }}</span>
+              </div>
+              <div class="py-3 flex justify-between items-center">
+                <span class="font-medium text-gray-500 dark:text-gray-400">Vehicle Number</span>
+                <span class="font-mono text-gray-800 dark:text-gray-200">{{ vehicleNumber() }}</span>
+              </div>
+              <div class="py-3 flex justify-between items-center">
+                <span class="font-medium text-gray-500 dark:text-gray-400">Amount Paid</span>
+                <span class="font-bold text-gray-800 dark:text-gray-200">{{ tollAmount() | currency:'INR':'symbol':'1.2-2' }}</span>
+              </div>
+               <div class="py-3 flex justify-between items-center">
+                <span class="font-medium text-gray-500 dark:text-gray-400">Payment Method</span>
+                <span class="text-gray-800 dark:text-gray-200">{{ selectedPaymentMethod() }}</span>
+              </div>
+            </div>
+            <button (click)="startOver()" class="w-full py-3 px-4 text-lg font-semibold text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-colors duration-300">
+              Make Another Payment
+            </button>
+          </div>
+        }
+      }
+    </div>
+  </div>
+</main>

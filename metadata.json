@@ -1,0 +1,5 @@
+{
+  "name": "Toll Tax Collector",
+  "description": "A modern web application to collect toll tax payments, offering various payment methods and generating a transaction receipt.",
+  "requestFramePermissions": []
+}
